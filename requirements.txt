@@ -1,0 +1,6 @@
+torch 
+tiktoken 
+tqdm 
+matplotlib
+datasets 
+wandb 
