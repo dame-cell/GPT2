@@ -55,7 +55,7 @@ def main(rank, world_size, args):
     
     # Initialize wandb only on the main process
     if rank == 0:
-        wandb.init(project="gpt2-sample-fineweb-ddp", config=args)
+        wandb.init(project="gpt2-sample-fineweb-ddp", config=args,api_key="04098c64a0b88d5f4ff90335b7f75613041420c6")
     
     tokenizer = tiktoken.get_encoding(args.tokenizer_name)
     ds = load_dataset(args.data_name, split='train')
