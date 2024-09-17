@@ -4,7 +4,7 @@ import torch.nn as nn
 import tiktoken 
 import argparse
 import wandb 
-from tqdm.auto import tqdm 
+from tqdm import tqdm 
 from datasets import load_dataset
 import torch.nn.functional as F 
 from modeling_gpt2 import GPT2
@@ -25,47 +25,38 @@ def cleanup():
     dist.destroy_process_group()
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Train gpt2 on sample-fineweb")
-    parser.add_argument('--epochs', type=int, default=2, help="Number of training epochs (default: 2)")
-    parser.add_argument('--vocab_size', type=int, default=50257, help="the tokenizer vocab size")
-    parser.add_argument('--emb_dim', type=int, default=768, help="the embedding dimension of the model")
-    parser.add_argument('--num_layers', type=int, default=12, help="the number of layers for the transformers")
-    parser.add_argument('--num_heads', type=int, default=12, help="the number of attentions heads for the transformers")
-    parser.add_argument('--tokenizer_name', type=str,default="gpt2", help="tokenizer name that will be used by tiktoken")
-    parser.add_argument('--lr', type=float, default=1e-4, help="Learning rate (default: 1e-4)")
-    parser.add_argument('--batch_size', type=int, default=32, help="Batch size for training and validation (default: 128)")
-    parser.add_argument('--weight_decay', type=float, default=1e-4, help="Weight decay for optimizer (default: 1e-4)")
-    parser.add_argument('--eval_interval', type=int, default=2, help="Evaluation interval during training (default: 100 steps)")
-    parser.add_argument('--seed', type=int, default=42, help="Random seed for reproducibility (default: 42)")
-    parser.add_argument('--max_length', type=int, default=512,help="max lenght for our model ")
-    parser.add_argument('--world_size', type=int, default=2, help="Number of GPUs/processes to use")
-    parser.add_argument('--data_name',type=str,default="eliplutchok/fineweb-small-sample",help="dataset to used for training but from huggingface")
-    parser.add_argument('--sample_size',type=int,default="300000",help="How many rows to train the model on (max is 700k)")
-    parser.add_argument('--stride', type=int, default=256, help="The stride defines how much overlap there is between the consecutive sequences.")
-
+    parser = argparse.ArgumentParser(description="Train gpt2 on sample-fineweb with DDP")
+    parser.add_argument('--epochs', type=int, default=2, help="Number of training epochs")
+    parser.add_argument('--vocab_size', type=int, default=50257, help="Tokenizer vocab size")
+    parser.add_argument('--emb_dim', type=int, default=768, help="Embedding dimension")
+    parser.add_argument('--num_layers', type=int, default=12, help="Number of transformer layers")
+    parser.add_argument('--num_heads', type=int, default=12, help="Number of attention heads")
+    parser.add_argument('--tokenizer_name', type=str, default="gpt2", help="Tokenizer name for tiktoken")
+    parser.add_argument('--lr', type=float, default=1e-4, help="Learning rate")
+    parser.add_argument('--batch_size', type=int, default=32, help="Batch size per GPU")
+    parser.add_argument('--weight_decay', type=float, default=1e-4, help="Weight decay for optimizer")
+    parser.add_argument('--eval_interval', type=int, default=100, help="Evaluation interval in steps")
+    parser.add_argument('--seed', type=int, default=42, help="Random seed")
+    parser.add_argument('--max_length', type=int, default=512, help="Maximum sequence length")
+    parser.add_argument('--data_name', type=str, default="eliplutchok/fineweb-small-sample", help="Dataset name")
+    parser.add_argument('--sample_size', type=int, default=300000, help="Number of samples to use")
+    parser.add_argument('--stride', type=int, default=256, help="Stride for dataset creation")
     return parser.parse_args()
-
-
-
 
 def main(rank, world_size, args):
     setup(rank, world_size)
-    setup_seed(args.seed + rank)  # Ensure different seeds for each process
+    setup_seed(args.seed + rank)
     device = torch.device(f"cuda:{rank}")
     
-    # Initialize wandb only on the main process
     if rank == 0:
-     
         wandb.init(project="gpt2-sample-fineweb-ddp", config=args)
     
     tokenizer = tiktoken.get_encoding(args.tokenizer_name)
     ds = load_dataset(args.data_name, split='train')
-    ds = ds.select(range(args.sample_size))
+    ds = ds.select(range(min(args.sample_size, len(ds))))
     data = ds.train_test_split(0.3)
 
-    train_data = data['train']
-    val_data = data['test']
-
+    train_data, val_data = data['train'], data['test']
     train_tokens = tokenize(tokenizer=tokenizer, data=train_data)
     val_tokens = tokenize(tokenizer=tokenizer, data=val_data)
 
@@ -75,8 +66,8 @@ def main(rank, world_size, args):
     train_sampler = DistributedSampler(train_dataset)
     val_sampler = DistributedSampler(val_dataset)
 
-    train_dataloader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, sampler=train_sampler, num_workers=4)
-    val_dataloader = DataLoader(dataset=val_dataset, batch_size=args.batch_size, sampler=val_sampler, num_workers=4)
+    train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, sampler=train_sampler, num_workers=4)
+    val_dataloader = DataLoader(val_dataset, batch_size=args.batch_size, sampler=val_sampler, num_workers=4)
 
     model = GPT2(args=args)
     model.to(device)
@@ -94,7 +85,9 @@ def main(rank, world_size, args):
         model.train()
         train_loss = 0.0
         
-        progress_bar = tqdm(enumerate(train_dataloader), total=len(train_dataloader), desc=f"Epoch {epoch+1}/{args.epochs}", disable=rank != 0)
+        progress_bar = tqdm(enumerate(train_dataloader), total=len(train_dataloader), 
+                            desc=f"GPU {rank} - Epoch {epoch+1}/{args.epochs}",
+                            position=rank, leave=True)
         
         for step, (input_batch, target_batch) in progress_bar:
             input_batch, target_batch = input_batch.to(device), target_batch.to(device)
@@ -106,6 +99,8 @@ def main(rank, world_size, args):
             optimizer.step()
 
             train_loss += loss.item()
+
+            progress_bar.set_postfix({"Loss": f"{loss.item():.4f}"})
 
             if rank == 0:
                 wandb.log({
@@ -135,12 +130,12 @@ def main(rank, world_size, args):
                         "epoch": epoch + 1,
                         "step": step + 1
                     })
-                    print(f"\nStep {step+1} - Train Loss: {train_loss/(step+1):.4f}, Validation Loss: {val_loss:.4f}")
+                    print(f"\nGPU {rank} - Step {step+1} - Train Loss: {train_loss/(step+1):.4f}, Validation Loss: {val_loss:.4f}")
                 
                 model.train()
 
         scheduler.step()
-        
+
         if rank == 0:
             START_CONTEXT = "As an AI language model,"
             token_ids = generate(
@@ -151,7 +146,7 @@ def main(rank, world_size, args):
                 context_len=args.max_length,
             )
             sample_text = token_ids_to_text(token_ids, tokenizer)
-            print("Sample text:", sample_text)
+            print(f"\nSample text (GPU {rank}):", sample_text)
             
             wandb.log({
                 "sample_text": sample_text,
