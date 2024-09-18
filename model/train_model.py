@@ -64,11 +64,8 @@ if __name__ == "__main__":
     train_dataloader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4)
     val_dataloader = DataLoader(dataset=val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4)
 
-    for input_batch , target_batch in train_dataloader:
-        print("input_batch",input_batch)
-        print("target_batch",target_batch)
-        break 
-    
+
+
     model = GPT2(args=args)
     model.to(DEVICE)
     total_params = sum(p.numel() for p in model.parameters())
