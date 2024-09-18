@@ -60,8 +60,11 @@ def main(rank, world_size, args):
     train_tokens = tokenize(tokenizer=tokenizer, data=train_data)
     val_tokens = tokenize(tokenizer=tokenizer, data=val_data)
 
+    print("GPT-dataset")
     train_dataset = GPTDatasetV1(token_ids=train_tokens, max_length=args.max_length, stride=args.stride)
     val_dataset = GPTDatasetV1(token_ids=val_tokens, max_length=args.max_length, stride=args.stride)
+
+    print("GPT-DistributedSampler")
 
     train_sampler = DistributedSampler(train_dataset)
     val_sampler = DistributedSampler(val_dataset)

@@ -34,7 +34,6 @@ class GPTDatasetV1(Dataset):
             input_chunk = token_ids[i:i + max_length]
             target_chunk = token_ids[i + 1: i + max_length + 1]
             
-            # No need to truncate as we're already slicing to max_length
 
             self.input_ids.append(torch.tensor(input_chunk))
             self.target_ids.append(torch.tensor(target_chunk))
