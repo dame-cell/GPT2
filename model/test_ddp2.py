@@ -31,6 +31,7 @@ def parse_args():
     parser.add_argument('--emb_dim', type=int, default=768, help="Embedding dimension")
     parser.add_argument('--num_layers', type=int, default=12, help="Number of transformer layers")
     parser.add_argument('--num_heads', type=int, default=12, help="Number of attention heads")
+    parser.add_argument('--local_rank', type=int, default=-1, metavar='N', help='Local process rank.')
     parser.add_argument('--tokenizer_name', type=str, default="gpt2", help="Tokenizer name for tiktoken")
     parser.add_argument('--lr', type=float, default=1e-4, help="Learning rate")
     parser.add_argument('--batch_size', type=int, default=32, help="Batch size per GPU")
@@ -52,6 +53,11 @@ def main(rank, world_size, args):
     
     if rank == 0:
         wandb.init(project="gpt2-sample-fineweb-ddp", config=args)
+    
+    local_rank = args.local_rank
+    torch.cuda.set_device(local_rank)
+    setup(local_rank, torch.cuda.device_count())
+    device = torch.device(f"cuda:{local_rank}")
     
     tokenizer = tiktoken.get_encoding(args.tokenizer_name)
     ds = load_dataset(args.data_name, split='train')

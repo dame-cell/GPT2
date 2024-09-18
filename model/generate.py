@@ -3,7 +3,6 @@ import tiktoken
 
 tokenizer = tiktoken.get_encoding("gpt2")
 
-# Helper functions for encoding/decoding text
 def text_to_token_ids(text, tokenizer):
     encoded = tokenizer.encode(text, allowed_special={'<|endoftext|>'})
     return torch.tensor(encoded).unsqueeze(0)  # Add batch dimension
