@@ -29,6 +29,8 @@ def cleanup():
 def parse_args():
     parser = argparse.ArgumentParser(description="Train GPT-2 on sample-fineweb with DDP")
     parser.add_argument('--epochs', type=int, default=2, help="Number of training epochs")
+    parser.add_argument('--train_data', type=str, help="path to the train npz file")
+    parser.add_argument('--test_data', type=str,  help="path to the test npz file")
     parser.add_argument('--vocab_size', type=int, default=50257, help="Tokenizer vocab size")
     parser.add_argument('--emb_dim', type=int, default=768, help="Embedding dimension")
     parser.add_argument('--num_layers', type=int, default=12, help="Number of transformer layers")
@@ -46,109 +48,116 @@ def parse_args():
     return parser.parse_args()
 
 def main(rank, args):
-    setup(rank, args.world_size)
+    try:
+        setup(rank, args.world_size)
 
-    # Set up device and initialize wandb
-    device = torch.device(f"cuda:{rank}")
-    wandb.init(project="gpt2-sample-fineweb-ddp", config=args, group=f"DDP_GPT2_{rank}", rank=rank)
+        # Set up device
+        device = torch.device(f"cuda:{rank}")
 
-    # Load and preprocess data
-    tokenizer = tiktoken.get_encoding("gpt2")
+        # Initialize wandb only for rank 0
+        if rank == 0:
+            wandb.init(project="gpt2-sample-fineweb-ddp", config=args, group=f"DDP_GPT2")
+
+        # Load and preprocess data
+        tokenizer = tiktoken.get_encoding("gpt2")
    
-    train_dataset = GPTDatasetV1("train_data.npz")
-    val_dataset = GPTDatasetV1("test_data.npz")
+        train_dataset = GPTDatasetV1(args.train_data)
+        val_dataset = GPTDatasetV1(args.test_data)
 
-    # Set up distributed data loaders and samplers
-    train_sampler = DistributedSampler(train_dataset, num_replicas=args.world_size, rank=rank)
-    val_sampler = DistributedSampler(val_dataset, num_replicas=args.world_size, rank=rank)
+        # Set up distributed data loaders and samplers
+        train_sampler = DistributedSampler(train_dataset, num_replicas=args.world_size, rank=rank)
+        val_sampler = DistributedSampler(val_dataset, num_replicas=args.world_size, rank=rank)
 
-    train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, sampler=train_sampler, num_workers=4)
-    val_dataloader = DataLoader(val_dataset, batch_size=args.batch_size, sampler=val_sampler, num_workers=4)
+        train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, sampler=train_sampler, num_workers=4)
+        val_dataloader = DataLoader(val_dataset, batch_size=args.batch_size, sampler=val_sampler, num_workers=4)
 
-    # Initialize model
-    model = GPT2(args)
-    model.to(device)
-    model = DDP(model, device_ids=[rank])
+        # Initialize model
+        model = GPT2(args)
+        model.to(device)
+        model = DDP(model, device_ids=[rank])
 
-    # Set up optimizer and learning rate scheduler
-    optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
+        # Set up optimizer and learning rate scheduler
+        optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
 
-    for epoch in range(args.epochs):
-        model.train()
-        train_sampler.set_epoch(epoch)
-        train_loss = 0.0
-        
-        progress_bar = tqdm(total=len(train_dataloader), desc=f"Rank {rank} Epoch {epoch+1}/{args.epochs}", leave=True)
-        
-        for step, (input_batch, target_batch) in enumerate(train_dataloader):
-            input_batch, target_batch = input_batch.to(device), target_batch.to(device)
+        for epoch in range(args.epochs):
+            model.train()
+            train_sampler.set_epoch(epoch)
+            train_loss = 0.0
             
-            optimizer.zero_grad()
-            logits = model(input_batch)
-            loss = F.cross_entropy(logits.flatten(0, 1), target_batch.flatten())
-            loss.backward()
-            optimizer.step()
-
-            train_loss += loss.item()
-
-            progress_bar.update(1)
-            progress_bar.set_postfix({"Loss": f"{loss.item():.4f}"})
-            wandb.log({
-                "train_loss": loss.item(),
-                "learning_rate": optimizer.param_groups[0]['lr'],
-                "epoch": epoch + 1,
-                "step": step + 1,
-                "rank": rank
-            })
-
-            if (step + 1) % args.eval_interval == 0 and rank == 0:  # Only rank 0 evaluates
-                model.eval()
-                val_loss = 0.0
-                val_steps = 0
+            progress_bar = tqdm(total=len(train_dataloader), desc=f"Rank {rank} Epoch {epoch+1}/{args.epochs}", leave=True)
+            
+            for step, (input_batch, target_batch) in enumerate(train_dataloader):
+                input_batch, target_batch = input_batch.to(device), target_batch.to(device)
                 
-                with torch.no_grad():
-                    for val_input_batch, val_target_batch in val_dataloader:
-                        val_input_batch, val_target_batch = val_input_batch.to(device), val_target_batch.to(device)
-                        val_logits = model(val_input_batch)
-                        val_loss += F.cross_entropy(val_logits.flatten(0, 1), val_target_batch.flatten()).item()
-                        val_steps += 1
+                optimizer.zero_grad()
+                logits = model(input_batch)
+                loss = F.cross_entropy(logits.flatten(0, 1), target_batch.flatten())
+                loss.backward()
+                optimizer.step()
+
+                train_loss += loss.item()
+
+                progress_bar.update(1)
+                progress_bar.set_postfix({"Loss": f"{loss.item():.4f}"})
                 
-                val_loss /= val_steps
+                if rank == 0:
+                    wandb.log({
+                        "train_loss": loss.item(),
+                        "learning_rate": optimizer.param_groups[0]['lr'],
+                        "epoch": epoch + 1,
+                        "step": step + 1,
+                    })
+
+                if (step + 1) % args.eval_interval == 0 and rank == 0:  # Only rank 0 evaluates
+                    model.eval()
+                    val_loss = 0.0
+                    val_steps = 0
+                    
+                    with torch.no_grad():
+                        for val_input_batch, val_target_batch in val_dataloader:
+                            val_input_batch, val_target_batch = val_input_batch.to(device), val_target_batch.to(device)
+                            val_logits = model(val_input_batch)
+                            val_loss += F.cross_entropy(val_logits.flatten(0, 1), val_target_batch.flatten()).item()
+                            val_steps += 1
+                    
+                    val_loss /= val_steps
+                    
+                    wandb.log({
+                        "val_loss": val_loss,
+                        "epoch": epoch + 1,
+                        "step": step + 1,
+                    })
+                    print(f"\nStep {step+1} - Rank {rank} Train Loss: {train_loss/(step+1):.4f}, Validation Loss: {val_loss:.4f}")
+                    
+                    model.train()
+
+            progress_bar.close()
+
+            scheduler.step()
+
+            if rank == 0:  # Only rank 0 generates sample text
+                START_CONTEXT = "As an AI language model,"
+                token_ids = generate(
+                    model=model.module,
+                    device=device,
+                    idx=text_to_token_ids(START_CONTEXT, tokenizer),
+                    max_new_tokens=20,
+                    context_len=args.max_length,
+                )
+                sample_text = token_ids_to_text(token_ids, tokenizer)
+                print(f"\nSample text:", sample_text)
                 
                 wandb.log({
-                    "val_loss": val_loss,
+                    "sample_text": sample_text,
                     "epoch": epoch + 1,
-                    "step": step + 1,
-                    "rank": rank
                 })
-                print(f"\nStep {step+1} - Rank {rank} Train Loss: {train_loss/(step+1):.4f}, Validation Loss: {val_loss:.4f}")
-                
-                model.train()
 
-        progress_bar.close()
-
-        scheduler.step()
-
-        if rank == 0:  # Only rank 0 generates sample text
-            START_CONTEXT = "As an AI language model,"
-            token_ids = generate(
-                model=model.module,
-                device=device,
-                idx=text_to_token_ids(START_CONTEXT, tokenizer),
-                max_new_tokens=20,
-                context_len=args.max_length,
-            )
-            sample_text = token_ids_to_text(token_ids, tokenizer)
-            print(f"\nSample text:", sample_text)
-            
-            wandb.log({
-                "sample_text": sample_text,
-                "epoch": epoch + 1,
-                "rank": rank
-            })
-
-    cleanup()
+    except Exception as e:
+        print(f"Rank {rank} encountered an error: {str(e)}")
+        raise e
+    finally:
+        cleanup()
 
 if __name__ == "__main__":
     args = parse_args()

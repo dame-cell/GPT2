@@ -15,6 +15,8 @@ from generate import text_to_token_ids ,  token_ids_to_text , generate
 def parse_args():
     parser = argparse.ArgumentParser(description="Train gpt2 on sample-fineweb")
     parser.add_argument('--epochs', type=int, default=2, help="Number of training epochs (default: 2)")
+    parser.add_argument('--train_data', type=str, help="path to the train npz file")
+    parser.add_argument('--test_data', type=str,  help="path to the test npz file")
     parser.add_argument('--vocab_size', type=int, default=50257, help="the tokenizer vocab size")
     parser.add_argument('--emb_dim', type=int, default=768, help="the embedding dimension of the model")
     parser.add_argument('--num_layers', type=int, default=12, help="the number of layers for the transformers")
@@ -46,20 +48,15 @@ if __name__ == "__main__":
     )
     
     tokenizer = tiktoken.get_encoding(args.tokenizer_name)
-    ds = load_dataset(args.data_name, split='train')
-    ds = ds.select(range(args.sample_size))
-    data = ds.train_test_split(0.3)
+
 
     START_CONTEXT = "As an AI language model,"
-    print("data:", data)
-    train_data = data['train']
-    val_data = data['test']
 
-    train_tokens = tokenize(tokenizer=tokenizer, data=train_data)
-    val_tokens = tokenize(tokenizer=tokenizer, data=val_data)
 
-    train_dataset = GPTDatasetV1(token_ids=train_tokens, max_length=args.max_length, stride=args.stride)
-    val_dataset = GPTDatasetV1(token_ids=val_tokens, max_length=args.max_length, stride=args.stride)
+    train_dataset = GPTDatasetV1(args.train_data)
+    val_dataset = GPTDatasetV1(args.test_data)
+
+
 
     train_dataloader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4)
     val_dataloader = DataLoader(dataset=val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4)
