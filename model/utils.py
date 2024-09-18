@@ -24,22 +24,22 @@ def tokenize(tokenizer,data):
     # Flatten the list of encoded texts into a single long sequence
     return [token for text in encoded_data for token in text]
 
+
 class GPTDatasetV1(Dataset):
     def __init__(self, token_ids, max_length, stride):
-        self.input_ids = []
-        self.target_ids = []
-
-        # Use a sliding window to chunk the book into overlapping sequences of max_length
-        for i in range(0, len(token_ids) - max_length, stride):
-            input_chunk = token_ids[i:i + max_length]
-            target_chunk = token_ids[i + 1: i + max_length + 1]
-            
-
-            self.input_ids.append(torch.tensor(input_chunk))
-            self.target_ids.append(torch.tensor(target_chunk))
+        self.token_ids = token_ids
+        self.max_length = max_length
+        self.stride = stride
+        self.num_samples = (len(token_ids) - max_length) // stride + 1
 
     def __len__(self):
-        return len(self.input_ids)
+        return self.num_samples
 
     def __getitem__(self, idx):
-        return self.input_ids[idx], self.target_ids[idx]
+        start_idx = idx * self.stride
+        end_idx = start_idx + self.max_length
+        
+        input_chunk = self.token_ids[start_idx:end_idx]
+        target_chunk = self.token_ids[start_idx+1:end_idx+1]
+        
+        return torch.tensor(input_chunk), torch.tensor(target_chunk)
