@@ -1,12 +1,13 @@
 import os
 import torch
-import torch.nn as nn 
-import tiktoken 
+import torch.nn as nn
+import numpy as np 
+import tiktoken
 import argparse
-import wandb 
-from tqdm import tqdm 
+import wandb
+from tqdm import tqdm
 from datasets import load_dataset
-import torch.nn.functional as F 
+import torch.nn.functional as F
 from modeling_gpt2 import GPT2
 from utils import tokenize, GPTDatasetV1, setup_seed, save_model_checkpoint
 from torch.utils.data import DataLoader
@@ -20,19 +21,18 @@ def setup(rank, world_size):
     os.environ['MASTER_ADDR'] = 'localhost'
     os.environ['MASTER_PORT'] = '12355'
     dist.init_process_group("nccl", rank=rank, world_size=world_size)
+    torch.cuda.set_device(rank)
 
 def cleanup():
     dist.destroy_process_group()
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Train gpt2 on sample-fineweb with DDP")
+    parser = argparse.ArgumentParser(description="Train GPT-2 on sample-fineweb with DDP")
     parser.add_argument('--epochs', type=int, default=2, help="Number of training epochs")
     parser.add_argument('--vocab_size', type=int, default=50257, help="Tokenizer vocab size")
     parser.add_argument('--emb_dim', type=int, default=768, help="Embedding dimension")
     parser.add_argument('--num_layers', type=int, default=12, help="Number of transformer layers")
     parser.add_argument('--num_heads', type=int, default=12, help="Number of attention heads")
-    parser.add_argument('--local_rank', type=int, default=-1, metavar='N', help='Local process rank.')
-    parser.add_argument('--tokenizer_name', type=str, default="gpt2", help="Tokenizer name for tiktoken")
     parser.add_argument('--lr', type=float, default=1e-4, help="Learning rate")
     parser.add_argument('--batch_size', type=int, default=32, help="Batch size per GPU")
     parser.add_argument('--weight_decay', type=float, default=1e-4, help="Weight decay for optimizer")
@@ -42,59 +42,44 @@ def parse_args():
     parser.add_argument('--data_name', type=str, default="eliplutchok/fineweb-small-sample", help="Dataset name")
     parser.add_argument('--sample_size', type=int, default=300000, help="Number of samples to use")
     parser.add_argument('--stride', type=int, default=256, help="Stride for dataset creation")
+    parser.add_argument('--world_size', type=int, default=2, help="Number of GPUs (DDP)")
     return parser.parse_args()
 
+def main(rank, args):
+    setup(rank, args.world_size)
 
-
-def main(rank, world_size, args):
-    setup(rank, world_size)
-    setup_seed(args.seed + rank)
+    # Set up device and initialize wandb
     device = torch.device(f"cuda:{rank}")
-    
-    if rank == 0:
-        wandb.init(project="gpt2-sample-fineweb-ddp", config=args)
-    
-    local_rank = args.local_rank
-    torch.cuda.set_device(local_rank)
-    setup(local_rank, torch.cuda.device_count())
-    device = torch.device(f"cuda:{local_rank}")
-    
-    tokenizer = tiktoken.get_encoding(args.tokenizer_name)
-    ds = load_dataset(args.data_name, split='train')
-    ds = ds.select(range(min(args.sample_size, len(ds))))
-    data = ds.train_test_split(0.3)
+    wandb.init(project="gpt2-sample-fineweb-ddp", config=args, group=f"DDP_GPT2_{rank}", rank=rank)
 
-    train_data, val_data = data['train'], data['test']
-    train_tokens = tokenize(tokenizer=tokenizer, data=train_data)
-    val_tokens = tokenize(tokenizer=tokenizer, data=val_data)
+    # Load and preprocess data
+    tokenizer = tiktoken.get_encoding("gpt2")
+   
+    train_dataset = GPTDatasetV1("train_data.npz")
+    val_dataset = GPTDatasetV1("test_data.npz")
 
-    train_dataset = GPTDatasetV1(token_ids=train_tokens, max_length=args.max_length, stride=args.stride)
-    val_dataset = GPTDatasetV1(token_ids=val_tokens, max_length=args.max_length, stride=args.stride)
-
-    train_sampler = DistributedSampler(train_dataset)
-    val_sampler = DistributedSampler(val_dataset)
+    # Set up distributed data loaders and samplers
+    train_sampler = DistributedSampler(train_dataset, num_replicas=args.world_size, rank=rank)
+    val_sampler = DistributedSampler(val_dataset, num_replicas=args.world_size, rank=rank)
 
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, sampler=train_sampler, num_workers=4)
     val_dataloader = DataLoader(val_dataset, batch_size=args.batch_size, sampler=val_sampler, num_workers=4)
 
-    model = GPT2(args=args)
+    # Initialize model
+    model = GPT2(args)
     model.to(device)
     model = DDP(model, device_ids=[rank])
 
-    if rank == 0:
-        total_params = sum(p.numel() for p in model.parameters())
-        print(f"Total number of parameters: {total_params:,}")
-
+    # Set up optimizer and learning rate scheduler
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
 
     for epoch in range(args.epochs):
-        train_sampler.set_epoch(epoch)
         model.train()
+        train_sampler.set_epoch(epoch)
         train_loss = 0.0
         
-        if rank == 0:
-            progress_bar = tqdm(total=len(train_dataloader), desc=f"Epoch {epoch+1}/{args.epochs}", leave=True)
+        progress_bar = tqdm(total=len(train_dataloader), desc=f"Rank {rank} Epoch {epoch+1}/{args.epochs}", leave=True)
         
         for step, (input_batch, target_batch) in enumerate(train_dataloader):
             input_batch, target_batch = input_batch.to(device), target_batch.to(device)
@@ -107,20 +92,17 @@ def main(rank, world_size, args):
 
             train_loss += loss.item()
 
-            if rank == 0:
-                progress_bar.update(1)
-                progress_bar.set_postfix({"Loss": f"{loss.item():.4f}"})
-                wandb.log({
-                    "train_loss": loss.item(),
-                    "learning_rate": optimizer.param_groups[0]['lr'],
-                    "epoch": epoch + 1,
-                    "step": step + 1
-                })
+            progress_bar.update(1)
+            progress_bar.set_postfix({"Loss": f"{loss.item():.4f}"})
+            wandb.log({
+                "train_loss": loss.item(),
+                "learning_rate": optimizer.param_groups[0]['lr'],
+                "epoch": epoch + 1,
+                "step": step + 1,
+                "rank": rank
+            })
 
-            if (step + 1) % 2000 == 0:
-                save_model_checkpoint(model, optimizer, scheduler, epoch, step, rank)
-
-            if (step + 1) % args.eval_interval == 0:
+            if (step + 1) % args.eval_interval == 0 and rank == 0:  # Only rank 0 evaluates
                 model.eval()
                 val_loss = 0.0
                 val_steps = 0
@@ -134,22 +116,21 @@ def main(rank, world_size, args):
                 
                 val_loss /= val_steps
                 
-                if rank == 0:
-                    wandb.log({
-                        "val_loss": val_loss,
-                        "epoch": epoch + 1,
-                        "step": step + 1
-                    })
-                    print(f"\nStep {step+1} - Train Loss: {train_loss/(step+1):.4f}, Validation Loss: {val_loss:.4f}")
+                wandb.log({
+                    "val_loss": val_loss,
+                    "epoch": epoch + 1,
+                    "step": step + 1,
+                    "rank": rank
+                })
+                print(f"\nStep {step+1} - Rank {rank} Train Loss: {train_loss/(step+1):.4f}, Validation Loss: {val_loss:.4f}")
                 
                 model.train()
 
-        if rank == 0:
-            progress_bar.close()
+        progress_bar.close()
 
         scheduler.step()
 
-        if rank == 0:
+        if rank == 0:  # Only rank 0 generates sample text
             START_CONTEXT = "As an AI language model,"
             token_ids = generate(
                 model=model.module,
@@ -163,12 +144,15 @@ def main(rank, world_size, args):
             
             wandb.log({
                 "sample_text": sample_text,
-                "epoch": epoch + 1
+                "epoch": epoch + 1,
+                "rank": rank
             })
 
     cleanup()
 
 if __name__ == "__main__":
     args = parse_args()
-    world_size = 2  # For two T4 GPUs on Kaggle
-    mp.spawn(main, args=(world_size, args), nprocs=world_size, join=True)
+    world_size = args.world_size
+
+    # Use torch.multiprocessing to spawn multiple processes for DDP
+    mp.spawn(main, args=(args,), nprocs=world_size, join=True)

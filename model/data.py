@@ -1,0 +1,55 @@
+import numpy as np
+import torch
+from tqdm import tqdm
+from utils import tokenize 
+import tiktoken 
+import argparse
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Processing data for the model")
+    parser.add_argument('--sample_size', type=int, default=300_000, help="sample size for data")
+ 
+    return parser.parse_args()
+
+def preprocess_and_save(token_ids, max_length, stride, save_path):
+    inputs = []
+    targets = []
+    
+    # Calculate the number of steps for tqdm
+    num_steps = (len(token_ids) - max_length) // stride + 1
+    
+    # Preprocess token_ids with tqdm to show progress
+    for i in tqdm(range(num_steps), desc=f"Processing {save_path}"):
+        start_idx = i * stride
+        input_chunk = token_ids[start_idx:start_idx + max_length]
+        target_chunk = token_ids[start_idx + 1:start_idx + max_length + 1]
+        inputs.append(input_chunk)
+        targets.append(target_chunk)
+    
+    np.savez(save_path, inputs=np.array(inputs), targets=np.array(targets))
+
+def split_and_save(token_ids, split_ratio=0.7, max_length=512, stride=256):
+    tokens_tensor = torch.tensor(token_ids)
+    num_samples = len(tokens_tensor)
+
+    # Shuffle the data
+    indices = torch.randperm(num_samples)
+    split_idx = int(num_samples * split_ratio)
+
+    # Split the dataset
+    train_tokens = tokens_tensor[indices[:split_idx]]
+    test_tokens = tokens_tensor[indices[split_idx:]]
+
+    # Preprocess and save train and test data
+    preprocess_and_save(train_tokens, max_length, stride, "train_data.npz")
+    preprocess_and_save(test_tokens, max_length, stride, "test_data.npz")
+
+if __name__ == "__main__":
+    tokenizer = tiktoken.get_encoding("gpt2")
+    args = parse_args()
+    from datasets import load_dataset 
+
+    ds = load_dataset("eliplutchok/fineweb-small-sample", split='train')
+    ds = ds.select(range(min(args.sample_size, len(ds))))
+    tokens = tokenize(tokenizer,ds)
+    split_and_save(tokens)

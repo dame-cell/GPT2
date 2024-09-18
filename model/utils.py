@@ -36,22 +36,21 @@ def save_model_checkpoint(model, optimizer, scheduler, epoch, step, rank, save_d
         'scheduler_state_dict': scheduler.state_dict(),
     }, save_path)
     print(f"Model saved at {save_path}")
-    
+
 class GPTDatasetV1(Dataset):
-    def __init__(self, token_ids, max_length, stride):
-        self.token_ids = token_ids
-        self.max_length = max_length
-        self.stride = stride
-        self.num_samples = (len(token_ids) - max_length) // stride + 1
+    def __init__(self, npz_file_path):
+        # Load precomputed inputs and targets from .npz file
+        data = np.load(npz_file_path)
+        self.inputs = data['inputs']
+        self.targets = data['targets']
+        
+        self.num_samples = len(self.inputs)
 
     def __len__(self):
         return self.num_samples
 
     def __getitem__(self, idx):
-        start_idx = idx * self.stride
-        end_idx = start_idx + self.max_length
-        
-        input_chunk = self.token_ids[start_idx:end_idx]
-        target_chunk = self.token_ids[start_idx+1:end_idx+1]
-        
+        input_chunk = self.inputs[idx]
+        target_chunk = self.targets[idx]
         return torch.tensor(input_chunk), torch.tensor(target_chunk)
+
