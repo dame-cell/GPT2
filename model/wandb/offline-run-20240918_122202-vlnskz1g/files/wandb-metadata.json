@@ -1,0 +1,35 @@
+{
+  "os": "Linux-5.15.0-1068-aws-x86_64-with-glibc2.31",
+  "python": "3.10.10",
+  "startedAt": "2024-09-18T12:22:02.526983Z",
+  "args": [
+    "--sample_size",
+    "100_000"
+  ],
+  "program": "/teamspace/studios/this_studio/GPT2/model/train_model.py",
+  "codePath": "model/train_model.py",
+  "git": {
+    "remote": "https://github.com/dame-cell/GPT2.git",
+    "commit": "89b2cb2a1de3ce1507457d0f6dcff145da05dc99"
+  },
+  "root": "/teamspace/studios/this_studio/GPT2/model",
+  "host": "ip-10-192-12-30",
+  "username": "zeus",
+  "executable": "/home/zeus/miniconda3/envs/cloudspace/bin/python",
+  "codePathLocal": "train_model.py",
+  "cpu_count": 2,
+  "cpu_count_logical": 4,
+  "disk": {
+    "/": {
+      "total": "416055988224",
+      "used": "35493515264"
+    }
+  },
+  "memory": {
+    "total": "16468406272"
+  },
+  "cpu": {
+    "count": 2,
+    "countLogical": 4
+  }
+}

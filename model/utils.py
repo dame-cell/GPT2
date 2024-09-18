@@ -24,7 +24,19 @@ def tokenize(tokenizer,data):
     # Flatten the list of encoded texts into a single long sequence
     return [token for text in encoded_data for token in text]
 
-
+def save_model_checkpoint(model, optimizer, scheduler, epoch, step, rank, save_dir="checkpoints"):
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    save_path = os.path.join(save_dir, f"gpt2_epoch{epoch+1}_step{step+1}_gpu{rank}.pt")
+    torch.save({
+        'epoch': epoch + 1,
+        'step': step + 1,
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'scheduler_state_dict': scheduler.state_dict(),
+    }, save_path)
+    print(f"Model saved at {save_path}")
+    
 class GPTDatasetV1(Dataset):
     def __init__(self, token_ids, max_length, stride):
         self.token_ids = token_ids

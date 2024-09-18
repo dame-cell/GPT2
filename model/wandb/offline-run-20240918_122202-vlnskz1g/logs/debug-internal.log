@@ -1,0 +1,18 @@
+{"time":"2024-09-18T12:22:02.533996668Z","level":"INFO","msg":"using version","core version":"0.18.1"}
+{"time":"2024-09-18T12:22:02.534089748Z","level":"INFO","msg":"created symlink","path":"/teamspace/studios/this_studio/GPT2/model/wandb/offline-run-20240918_122202-vlnskz1g/logs/debug-core.log"}
+{"time":"2024-09-18T12:22:02.535307456Z","level":"INFO","msg":"using version","core version":"0.18.1"}
+{"time":"2024-09-18T12:22:02.53533817Z","level":"INFO","msg":"created symlink","path":"/teamspace/studios/this_studio/GPT2/model/wandb/offline-run-20240918_122202-vlnskz1g/logs/debug-core.log"}
+{"time":"2024-09-18T12:22:02.53758456Z","level":"INFO","msg":"created new stream","id":"vlnskz1g"}
+{"time":"2024-09-18T12:22:02.537629622Z","level":"INFO","msg":"stream: started","id":"vlnskz1g"}
+{"time":"2024-09-18T12:22:02.537656252Z","level":"INFO","msg":"writer: Do: started","stream_id":{"value":"vlnskz1g"}}
+{"time":"2024-09-18T12:22:02.537672454Z","level":"INFO","msg":"sender: started","stream_id":{"value":"vlnskz1g"}}
+{"time":"2024-09-18T12:22:02.537708238Z","level":"INFO","msg":"handler: started","stream_id":{"value":"vlnskz1g"}}
+{"time":"2024-09-18T12:22:02.552506962Z","level":"INFO","msg":"wandb-core","!BADKEY":null}
+{"time":"2024-09-18T12:22:02.594536014Z","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-09-18T12:23:16.917513952Z","level":"INFO","msg":"stream: closing","id":"vlnskz1g"}
+{"time":"2024-09-18T12:23:16.917671285Z","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-09-18T12:23:16.921814802Z","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-09-18T12:23:16.922301698Z","level":"INFO","msg":"handler: closed","stream_id":{"value":"vlnskz1g"}}
+{"time":"2024-09-18T12:23:16.922353827Z","level":"INFO","msg":"writer: Close: closed","stream_id":{"value":"vlnskz1g"}}
+{"time":"2024-09-18T12:23:16.92240536Z","level":"INFO","msg":"sender: closed","stream_id":{"value":"vlnskz1g"}}
+{"time":"2024-09-18T12:23:16.922487357Z","level":"INFO","msg":"stream: closed","id":"vlnskz1g"}

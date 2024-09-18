@@ -7,7 +7,7 @@ from tqdm.auto import tqdm
 from datasets import load_dataset
 import torch.nn.functional  as F 
 from modeling_gpt2 import GPT2
-from utils import tokenize ,GPTDatasetV1, setup_seed
+from utils import tokenize ,GPTDatasetV1, setup_seed, save_model_checkpoint
 from torch.utils.data import DataLoader
 from generate import text_to_token_ids ,  token_ids_to_text , generate 
 
@@ -64,6 +64,11 @@ if __name__ == "__main__":
     train_dataloader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4)
     val_dataloader = DataLoader(dataset=val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4)
 
+    for input_batch , target_batch in train_dataloader:
+        print("input_batch",input_batch)
+        print("target_batch",target_batch)
+        break 
+    
     model = GPT2(args=args)
     model.to(DEVICE)
     total_params = sum(p.numel() for p in model.parameters())
@@ -100,6 +105,8 @@ if __name__ == "__main__":
                 "epoch": epoch + 1,
                 "step": step + 1
             })
+            if (step + 1) % 2000 == 0:
+                save_model_checkpoint(model, optimizer, scheduler, epoch, step, rank)
 
             if (step + 1) % args.eval_interval == 0:
                 model.eval()

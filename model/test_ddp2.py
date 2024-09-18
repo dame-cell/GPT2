@@ -8,7 +8,7 @@ from tqdm import tqdm
 from datasets import load_dataset
 import torch.nn.functional as F 
 from modeling_gpt2 import GPT2
-from utils import tokenize, GPTDatasetV1, setup_seed
+from utils import tokenize, GPTDatasetV1, setup_seed, save_model_checkpoint
 from torch.utils.data import DataLoader
 from generate import text_to_token_ids, token_ids_to_text, generate
 import torch.distributed as dist
@@ -43,6 +43,8 @@ def parse_args():
     parser.add_argument('--stride', type=int, default=256, help="Stride for dataset creation")
     return parser.parse_args()
 
+
+
 def main(rank, world_size, args):
     setup(rank, world_size)
     setup_seed(args.seed + rank)
@@ -60,11 +62,8 @@ def main(rank, world_size, args):
     train_tokens = tokenize(tokenizer=tokenizer, data=train_data)
     val_tokens = tokenize(tokenizer=tokenizer, data=val_data)
 
-    print("GPT-dataset")
     train_dataset = GPTDatasetV1(token_ids=train_tokens, max_length=args.max_length, stride=args.stride)
     val_dataset = GPTDatasetV1(token_ids=val_tokens, max_length=args.max_length, stride=args.stride)
-
-    print("GPT-DistributedSampler")
 
     train_sampler = DistributedSampler(train_dataset)
     val_sampler = DistributedSampler(val_dataset)
@@ -88,11 +87,10 @@ def main(rank, world_size, args):
         model.train()
         train_loss = 0.0
         
-        progress_bar = tqdm(enumerate(train_dataloader), total=len(train_dataloader), 
-                            desc=f"GPU {rank} - Epoch {epoch+1}/{args.epochs}",
-                            position=rank, leave=True)
+        if rank == 0:
+            progress_bar = tqdm(total=len(train_dataloader), desc=f"Epoch {epoch+1}/{args.epochs}", leave=True)
         
-        for step, (input_batch, target_batch) in progress_bar:
+        for step, (input_batch, target_batch) in enumerate(train_dataloader):
             input_batch, target_batch = input_batch.to(device), target_batch.to(device)
             
             optimizer.zero_grad()
@@ -103,15 +101,18 @@ def main(rank, world_size, args):
 
             train_loss += loss.item()
 
-            progress_bar.set_postfix({"Loss": f"{loss.item():.4f}"})
-
             if rank == 0:
+                progress_bar.update(1)
+                progress_bar.set_postfix({"Loss": f"{loss.item():.4f}"})
                 wandb.log({
                     "train_loss": loss.item(),
                     "learning_rate": optimizer.param_groups[0]['lr'],
                     "epoch": epoch + 1,
                     "step": step + 1
                 })
+
+            if (step + 1) % 2000 == 0:
+                save_model_checkpoint(model, optimizer, scheduler, epoch, step, rank)
 
             if (step + 1) % args.eval_interval == 0:
                 model.eval()
@@ -133,9 +134,12 @@ def main(rank, world_size, args):
                         "epoch": epoch + 1,
                         "step": step + 1
                     })
-                    print(f"\nGPU {rank} - Step {step+1} - Train Loss: {train_loss/(step+1):.4f}, Validation Loss: {val_loss:.4f}")
+                    print(f"\nStep {step+1} - Train Loss: {train_loss/(step+1):.4f}, Validation Loss: {val_loss:.4f}")
                 
                 model.train()
+
+        if rank == 0:
+            progress_bar.close()
 
         scheduler.step()
 
@@ -149,7 +153,7 @@ def main(rank, world_size, args):
                 context_len=args.max_length,
             )
             sample_text = token_ids_to_text(token_ids, tokenizer)
-            print(f"\nSample text (GPU {rank}):", sample_text)
+            print(f"\nSample text:", sample_text)
             
             wandb.log({
                 "sample_text": sample_text,

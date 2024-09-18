@@ -1,0 +1,18 @@
+{"time":"2024-09-18T12:21:32.133615504Z","level":"INFO","msg":"using version","core version":"0.18.1"}
+{"time":"2024-09-18T12:21:32.133683803Z","level":"INFO","msg":"created symlink","path":"/teamspace/studios/this_studio/GPT2/model/wandb/offline-run-20240918_122132-tbxx80xy/logs/debug-core.log"}
+{"time":"2024-09-18T12:21:32.133766977Z","level":"INFO","msg":"using version","core version":"0.18.1"}
+{"time":"2024-09-18T12:21:32.133776727Z","level":"INFO","msg":"created symlink","path":"/teamspace/studios/this_studio/GPT2/model/wandb/offline-run-20240918_122132-tbxx80xy/logs/debug-core.log"}
+{"time":"2024-09-18T12:21:32.134550684Z","level":"INFO","msg":"created new stream","id":"tbxx80xy"}
+{"time":"2024-09-18T12:21:32.134574658Z","level":"INFO","msg":"stream: started","id":"tbxx80xy"}
+{"time":"2024-09-18T12:21:32.134606726Z","level":"INFO","msg":"handler: started","stream_id":{"value":"tbxx80xy"}}
+{"time":"2024-09-18T12:21:32.134667461Z","level":"INFO","msg":"writer: Do: started","stream_id":{"value":"tbxx80xy"}}
+{"time":"2024-09-18T12:21:32.134628268Z","level":"INFO","msg":"sender: started","stream_id":{"value":"tbxx80xy"}}
+{"time":"2024-09-18T12:21:32.138546652Z","level":"INFO","msg":"wandb-core","!BADKEY":null}
+{"time":"2024-09-18T12:21:32.182672605Z","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-09-18T12:21:36.545585798Z","level":"INFO","msg":"stream: closing","id":"tbxx80xy"}
+{"time":"2024-09-18T12:21:36.54567458Z","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-09-18T12:21:36.545850404Z","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-09-18T12:21:36.545998893Z","level":"INFO","msg":"handler: closed","stream_id":{"value":"tbxx80xy"}}
+{"time":"2024-09-18T12:21:36.546018813Z","level":"INFO","msg":"writer: Close: closed","stream_id":{"value":"tbxx80xy"}}
+{"time":"2024-09-18T12:21:36.54604686Z","level":"INFO","msg":"sender: closed","stream_id":{"value":"tbxx80xy"}}
+{"time":"2024-09-18T12:21:36.546244865Z","level":"INFO","msg":"stream: closed","id":"tbxx80xy"}
