@@ -8,7 +8,7 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser(description="Processing data for the model")
     parser.add_argument('--sample_size', type=int, default=300_000, help="sample size for data")
- 
+    parser.add_argument('--data_name', type=str, default="eliplutchok/fineweb-small-sample", help="data to be used in processing and training")
     return parser.parse_args()
 
 def preprocess_and_save(token_ids, max_length, stride, save_path):
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     args = parse_args()
     from datasets import load_dataset 
 
-    ds = load_dataset("eliplutchok/fineweb-small-sample", split='train')
+    ds = load_dataset(args.data_name, split='train')
     ds = ds.select(range(min(args.sample_size, len(ds))))
     tokens = tokenize(tokenizer,ds)
     split_and_save(tokens)
