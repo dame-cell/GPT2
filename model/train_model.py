@@ -71,6 +71,7 @@ if __name__ == "__main__":
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
+    scaler = torch.GradScaler()
 
     # Training Loop
     for epoch in range(args.epochs):
@@ -82,14 +83,14 @@ if __name__ == "__main__":
             input_batch, target_batch = input_batch.to(DEVICE), target_batch.to(DEVICE)
             
             optimizer.zero_grad()
-            logits = model(input_batch)
-            
-            # Compute loss
-            loss = F.cross_entropy(logits.flatten(0, 1), target_batch.flatten())
+            with torch.autocast(device_type="cuda", dtype=torch.float16):
+                logits = model(input_batch)
+                loss = F.cross_entropy(logits.flatten(0, 1), target_batch.flatten())
             
             # Backward pass and optimization step
-            loss.backward()
-            optimizer.step()
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
 
             train_loss += loss.item()  # Accumulate train loss
 

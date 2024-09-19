@@ -21,7 +21,6 @@ def tokenize(tokenizer,data):
         encoded_text = tokenizer.encode(item['text'])
         encoded_data.append(encoded_text)
     
-    # Flatten the list of encoded texts into a single long sequence
     return [token for text in encoded_data for token in text]
 
 def save_model_checkpoint(model, optimizer, scheduler, epoch, step, rank, save_dir="checkpoints"):
