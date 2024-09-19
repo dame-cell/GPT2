@@ -79,7 +79,9 @@ def main(rank, args):
         model = GPT2(args)
         model.to(device)
         model = DDP(model, device_ids=[rank])
-
+        total_params = sum(p.numel() for p in model.parameters())
+        print(f"Total number of parameters: {total_params:,}")
+        
         # Set up optimizer and learning rate scheduler
         optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
         num_training_steps = len(train_dataloader) * args.epochs

@@ -43,11 +43,7 @@ if __name__ == "__main__":
     args = parse_args()
     setup_seed(args.seed)
     DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-    model = GPT2(args=args)
-    model.to(DEVICE)
-    total_params = sum(p.numel() for p in model.parameters())
-    print(f"Total number of parameters: {total_params:,}")
-
+ 
     # Initialize Weights & Biases
     wandb.login(key="04098c64a0b88d5f4ff90335b7f75613041420c6")
     wandb.init(
