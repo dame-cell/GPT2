@@ -100,7 +100,7 @@ if __name__ == "__main__":
                 "step": step + 1
             })
             if (step + 1) % 2000 == 0:
-                save_model_checkpoint(model, optimizer, scheduler, epoch, step, rank)
+                save_model_checkpoint(model, optimizer, scheduler, epoch, step,rank=None)
 
             if (step + 1) % args.eval_interval == 0:
                 model.eval()
