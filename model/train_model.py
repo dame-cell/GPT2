@@ -28,6 +28,7 @@ def parse_args():
     parser.add_argument('--eval_interval', type=int, default=2, help="Evaluation interval during training (default: 100 steps)")
     parser.add_argument('--seed', type=int, default=42, help="Random seed for reproducibility (default: 42)")
     parser.add_argument('--max_length', type=int, default=512,help="max lenght for our model ")
+    parser.add_argument('--context_len', type=int, default=20,help="max length for the model generatng text")
     parser.add_argument('--data_name',type=str,default="eliplutchok/fineweb-small-sample",help="dataset to used for training but from huggingface")
     parser.add_argument('--sample_size',type=int,default="300000",help="How many rows to train the model on (max is 700k)")
     parser.add_argument('--stride', type=int, default=256, help="The stride defines how much overlap there is between the consecutive sequences.")
@@ -92,7 +93,6 @@ if __name__ == "__main__":
 
             train_loss += loss.item()  # Accumulate train loss
 
-            # Log training loss and learning rate to wandb
             wandb.log({
                 "train_loss": loss.item(),
                 "learning_rate": optimizer.param_groups[0]['lr'],
