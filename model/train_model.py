@@ -45,6 +45,7 @@ if __name__ == "__main__":
     DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
     
     # Initialize Weights & Biases
+    wandb.login(key="04098c64a0b88d5f4ff90335b7f75613041420c6")
     wandb.init(
         project="gpt2-sample-fineweb",
         config=args
