@@ -10,6 +10,8 @@ from modeling_gpt2 import GPT2
 from utils import tokenize ,GPTDatasetV1, setup_seed, save_model_checkpoint
 from torch.utils.data import DataLoader
 from generate import text_to_token_ids ,  token_ids_to_text , generate 
+from transformers import get_linear_schedule_with_warmup
+
 
 
 def parse_args():
@@ -70,7 +72,9 @@ if __name__ == "__main__":
     print(f"Total number of parameters: {total_params:,}")
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
+    num_training_steps = len(train_dataloader) * args.epochs
+    num_warmup_steps = int(0.1 * num_training_steps)  
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps, num_training_steps)    
     scaler = torch.GradScaler()
 
     # Training Loop

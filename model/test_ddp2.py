@@ -16,6 +16,7 @@ import torch.distributed as dist
 import torch.multiprocessing as mp
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data.distributed import DistributedSampler
+from transformers import get_linear_schedule_with_warmup
 
 def setup(rank, world_size):
     os.environ['MASTER_ADDR'] = 'localhost'
@@ -31,6 +32,7 @@ def parse_args():
     parser.add_argument('--epochs', type=int, default=2, help="Number of training epochs")
     parser.add_argument('--train_data', type=str, help="path to the train npz file")
     parser.add_argument('--test_data', type=str,  help="path to the test npz file")
+    parser.add_argument('--context_len', type=int, default=20,help="max length for the model generatng text")
     parser.add_argument('--vocab_size', type=int, default=50257, help="Tokenizer vocab size")
     parser.add_argument('--emb_dim', type=int, default=768, help="Embedding dimension")
     parser.add_argument('--num_layers', type=int, default=12, help="Number of transformer layers")
@@ -78,7 +80,10 @@ def main(rank, args):
 
         # Set up optimizer and learning rate scheduler
         optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
+        num_training_steps = len(train_dataloader) * args.epochs
+        num_warmup_steps = int(0.1 * num_training_steps)  
+        scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps, num_training_steps)          
+        scaler = torch.GradScaler()
 
         for epoch in range(args.epochs):
             model.train()
@@ -91,11 +96,12 @@ def main(rank, args):
                 input_batch, target_batch = input_batch.to(device), target_batch.to(device)
                 
                 optimizer.zero_grad()
-                logits = model(input_batch)
-                loss = F.cross_entropy(logits.flatten(0, 1), target_batch.flatten())
-                loss.backward()
-                optimizer.step()
-
+                with torch.autocast(device_type="cuda", dtype=torch.float16):
+                    logits = model(input_batch)
+                    loss = F.cross_entropy(logits.flatten(0, 1), target_batch.flatten())
+                scaler.scale(loss).backward()
+                scaler.step(optimizer)
+                scaler.update()
                 train_loss += loss.item()
 
                 progress_bar.update(1)
@@ -143,7 +149,7 @@ def main(rank, args):
                     device=device,
                     idx=text_to_token_ids(START_CONTEXT, tokenizer),
                     max_new_tokens=20,
-                    context_len=args.max_length,
+                    context_len=args.context_len,
                 )
                 sample_text = token_ids_to_text(token_ids, tokenizer)
                 print(f"\nSample text:", sample_text)
@@ -162,6 +168,4 @@ def main(rank, args):
 if __name__ == "__main__":
     args = parse_args()
     world_size = args.world_size
-
-    # Use torch.multiprocessing to spawn multiple processes for DDP
     mp.spawn(main, args=(args,), nprocs=world_size, join=True)

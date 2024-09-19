@@ -4,3 +4,4 @@ tqdm
 matplotlib
 datasets 
 wandb 
+transformers
