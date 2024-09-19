@@ -32,13 +32,9 @@ def split_and_save(token_ids, split_ratio=0.7, max_length=512, stride=256):
     tokens_tensor = torch.tensor(token_ids)
     num_samples = len(tokens_tensor)
 
-    # Shuffle the data
-    indices = torch.randperm(num_samples)
     split_idx = int(num_samples * split_ratio)
-
-    # Split the dataset
-    train_tokens = tokens_tensor[indices[:split_idx]]
-    test_tokens = tokens_tensor[indices[split_idx:]]
+    train_tokens = tokens_tensor[:split_idx]
+    test_tokens = tokens_tensor[split_idx:]
 
     # Preprocess and save train and test data
     preprocess_and_save(train_tokens, max_length, stride, "train_data.npz")
