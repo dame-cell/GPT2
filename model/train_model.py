@@ -98,6 +98,7 @@ if __name__ == "__main__":
             scaler.update()
 
             train_loss += loss.item()  # Accumulate train loss
+            scheduler.step()
 
             wandb.log({
                 "train_loss": loss.item(),
@@ -136,7 +137,6 @@ if __name__ == "__main__":
                 print(f"\nStep {step+1} - Train Loss: {train_loss/(step+1):.4f}, Validation Loss: {val_loss:.4f}")
                 model.train()  # Switch back to train mode after validation
 
-        scheduler.step()
 
         # Generate text at the end of each epoch
         token_ids = generate(

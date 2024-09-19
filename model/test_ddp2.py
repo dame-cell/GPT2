@@ -108,6 +108,8 @@ def main(rank, args):
                 scaler.update()
                 train_loss += loss.item()
 
+                scheduler.step()
+
                 progress_bar.update(1)
                 progress_bar.set_postfix({"Loss": f"{loss.item():.4f}"})
                 
@@ -144,7 +146,6 @@ def main(rank, args):
 
             progress_bar.close()
 
-            scheduler.step()
 
             if rank == 0:  # Only rank 0 generates sample text
                 START_CONTEXT = "As an AI language model,"
