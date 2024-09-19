@@ -1,0 +1,18 @@
+{"time":"2024-09-19T12:11:22.883538621Z","level":"INFO","msg":"using version","core version":"0.18.1"}
+{"time":"2024-09-19T12:11:22.88355727Z","level":"INFO","msg":"created symlink","path":"/teamspace/studios/this_studio/GPT2/model/wandb/run-20240919_121122-ga50v87a/logs/debug-core.log"}
+{"time":"2024-09-19T12:11:22.883633566Z","level":"INFO","msg":"using version","core version":"0.18.1"}
+{"time":"2024-09-19T12:11:22.883637144Z","level":"INFO","msg":"created symlink","path":"/teamspace/studios/this_studio/GPT2/model/wandb/run-20240919_121122-ga50v87a/logs/debug-core.log"}
+{"time":"2024-09-19T12:11:22.884844889Z","level":"INFO","msg":"created new stream","id":"ga50v87a"}
+{"time":"2024-09-19T12:11:22.884888382Z","level":"INFO","msg":"stream: started","id":"ga50v87a"}
+{"time":"2024-09-19T12:11:22.885074977Z","level":"INFO","msg":"handler: started","stream_id":{"value":"ga50v87a"}}
+{"time":"2024-09-19T12:11:22.885308402Z","level":"INFO","msg":"sender: started","stream_id":{"value":"ga50v87a"}}
+{"time":"2024-09-19T12:11:22.88532437Z","level":"INFO","msg":"writer: Do: started","stream_id":{"value":"ga50v87a"}}
+{"time":"2024-09-19T12:11:23.061461042Z","level":"INFO","msg":"wandb-core","!BADKEY":null}
+{"time":"2024-09-19T12:11:23.06244494Z","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-09-19T12:11:23.206658084Z","level":"INFO","msg":"stream: closing","id":"ga50v87a"}
+{"time":"2024-09-19T12:11:23.2067432Z","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-09-19T12:11:23.206971357Z","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-09-19T12:11:23.791143292Z","level":"INFO","msg":"handler: closed","stream_id":{"value":"ga50v87a"}}
+{"time":"2024-09-19T12:11:23.791206363Z","level":"INFO","msg":"writer: Close: closed","stream_id":{"value":"ga50v87a"}}
+{"time":"2024-09-19T12:11:23.791264987Z","level":"INFO","msg":"sender: closed","stream_id":{"value":"ga50v87a"}}
+{"time":"2024-09-19T12:11:23.79127324Z","level":"INFO","msg":"stream: closed","id":"ga50v87a"}

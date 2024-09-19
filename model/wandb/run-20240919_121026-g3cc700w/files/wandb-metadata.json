@@ -1,0 +1,17 @@
+{
+  "os": "Linux-5.15.0-1068-aws-x86_64-with-glibc2.31",
+  "python": "3.10.10",
+  "startedAt": "2024-09-19T12:10:26.609468Z",
+  "program": "/teamspace/studios/this_studio/GPT2/model/train_model.py",
+  "codePath": "model/train_model.py",
+  "git": {
+    "remote": "https://github.com/dame-cell/GPT2.git",
+    "commit": "c1300b89b50daee75fb8b514a627c3c1aede39c7"
+  },
+  "email": "doss72180@gmail.com",
+  "root": "/teamspace/studios/this_studio/GPT2/model",
+  "host": "ip-10-192-10-180",
+  "username": "zeus",
+  "executable": "/home/zeus/miniconda3/envs/cloudspace/bin/python",
+  "codePathLocal": "train_model.py"
+}

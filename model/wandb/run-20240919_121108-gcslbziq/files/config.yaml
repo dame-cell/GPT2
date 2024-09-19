@@ -1,0 +1,65 @@
+_wandb:
+    value:
+        cli_version: 0.18.1
+        m: []
+        python_version: 3.10.10
+        t:
+            "1":
+                - 1
+                - 11
+                - 49
+                - 51
+                - 55
+            "2":
+                - 1
+                - 11
+                - 49
+                - 51
+                - 55
+            "3":
+                - 16
+                - 23
+                - 55
+            "4": 3.10.10
+            "5": 0.18.1
+            "6": 4.44.2
+            "8":
+                - 5
+            "12": 0.18.1
+            "13": linux-x86_64
+batch_size:
+    value: 32
+context_len:
+    value: 20
+data_name:
+    value: eliplutchok/fineweb-small-sample
+emb_dim:
+    value: 384
+epochs:
+    value: 2
+eval_interval:
+    value: 2
+lr:
+    value: 0.0001
+max_length:
+    value: 512
+num_heads:
+    value: 12
+num_layers:
+    value: 6
+sample_size:
+    value: 300000
+seed:
+    value: 42
+stride:
+    value: 256
+test_data:
+    value: null
+tokenizer_name:
+    value: gpt2
+train_data:
+    value: null
+vocab_size:
+    value: 50257
+weight_decay:
+    value: 0.0001

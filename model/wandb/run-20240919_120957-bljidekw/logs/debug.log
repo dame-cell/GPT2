@@ -1,0 +1,27 @@
+2024-09-19 12:09:57,071 INFO    MainThread:30630 [wandb_setup.py:_flush():77] Current SDK version is 0.18.1
+2024-09-19 12:09:57,071 INFO    MainThread:30630 [wandb_setup.py:_flush():77] Configure stats pid to 30630
+2024-09-19 12:09:57,071 INFO    MainThread:30630 [wandb_setup.py:_flush():77] Loading settings from /teamspace/studios/this_studio/.config/wandb/settings
+2024-09-19 12:09:57,071 INFO    MainThread:30630 [wandb_setup.py:_flush():77] Loading settings from /teamspace/studios/this_studio/GPT2/model/wandb/settings
+2024-09-19 12:09:57,071 INFO    MainThread:30630 [wandb_setup.py:_flush():77] Loading settings from environment variables: {}
+2024-09-19 12:09:57,071 INFO    MainThread:30630 [wandb_setup.py:_flush():77] Inferring run settings from compute environment: {'program_relpath': 'model/train_model.py', 'program_abspath': '/teamspace/studios/this_studio/GPT2/model/train_model.py', 'program': '/teamspace/studios/this_studio/GPT2/model/train_model.py'}
+2024-09-19 12:09:57,071 INFO    MainThread:30630 [wandb_setup.py:_flush():77] Applying login settings: {'api_key': '***REDACTED***'}
+2024-09-19 12:09:57,071 INFO    MainThread:30630 [wandb_setup.py:_flush():77] Applying login settings: {'api_key': '***REDACTED***'}
+2024-09-19 12:09:57,071 INFO    MainThread:30630 [wandb_setup.py:_flush():77] Applying login settings: {}
+2024-09-19 12:09:57,071 INFO    MainThread:30630 [wandb_init.py:_log_setup():532] Logging user logs to /teamspace/studios/this_studio/GPT2/model/wandb/run-20240919_120957-bljidekw/logs/debug.log
+2024-09-19 12:09:57,071 INFO    MainThread:30630 [wandb_init.py:_log_setup():533] Logging internal logs to /teamspace/studios/this_studio/GPT2/model/wandb/run-20240919_120957-bljidekw/logs/debug-internal.log
+2024-09-19 12:09:57,071 INFO    MainThread:30630 [wandb_init.py:init():616] calling init triggers
+2024-09-19 12:09:57,071 INFO    MainThread:30630 [wandb_init.py:init():623] wandb.init called with sweep_config: {}
+config: {'epochs': 2, 'train_data': None, 'test_data': None, 'vocab_size': 50257, 'emb_dim': 768, 'num_layers': 6, 'num_heads': 12, 'tokenizer_name': 'gpt2', 'lr': 0.0001, 'batch_size': 32, 'weight_decay': 0.0001, 'eval_interval': 2, 'seed': 42, 'max_length': 512, 'context_len': 20, 'data_name': 'eliplutchok/fineweb-small-sample', 'sample_size': 300000, 'stride': 256}
+2024-09-19 12:09:57,071 INFO    MainThread:30630 [wandb_init.py:init():666] starting backend
+2024-09-19 12:09:57,071 INFO    MainThread:30630 [wandb_init.py:init():670] setting up manager
+2024-09-19 12:09:57,072 INFO    MainThread:30630 [backend.py:_multiprocessing_setup():105] multiprocessing start_methods=fork,spawn,forkserver, using: spawn
+2024-09-19 12:09:57,073 INFO    MainThread:30630 [wandb_init.py:init():678] backend started and connected
+2024-09-19 12:09:57,075 INFO    MainThread:30630 [wandb_init.py:init():773] updated telemetry
+2024-09-19 12:09:57,081 INFO    MainThread:30630 [wandb_init.py:init():806] communicating run to backend with 90.0 second timeout
+2024-09-19 12:09:57,230 INFO    MainThread:30630 [wandb_init.py:init():857] starting run threads in backend
+2024-09-19 12:09:57,339 INFO    MainThread:30630 [wandb_run.py:_console_start():2459] atexit reg
+2024-09-19 12:09:57,339 INFO    MainThread:30630 [wandb_run.py:_redirect():2307] redirect: wrap_raw
+2024-09-19 12:09:57,339 INFO    MainThread:30630 [wandb_run.py:_redirect():2372] Wrapping output streams.
+2024-09-19 12:09:57,339 INFO    MainThread:30630 [wandb_run.py:_redirect():2397] Redirects installed.
+2024-09-19 12:09:57,341 INFO    MainThread:30630 [wandb_init.py:init():900] run started, returning control to user process
+2024-09-19 12:09:57,383 WARNING MsgRouterThr:30630 [router.py:message_loop():77] message_loop has been closed

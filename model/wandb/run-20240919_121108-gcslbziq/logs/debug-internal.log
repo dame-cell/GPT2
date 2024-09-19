@@ -1,0 +1,18 @@
+{"time":"2024-09-19T12:11:08.522863507Z","level":"INFO","msg":"using version","core version":"0.18.1"}
+{"time":"2024-09-19T12:11:08.522879899Z","level":"INFO","msg":"created symlink","path":"/teamspace/studios/this_studio/GPT2/model/wandb/run-20240919_121108-gcslbziq/logs/debug-core.log"}
+{"time":"2024-09-19T12:11:08.522927304Z","level":"INFO","msg":"using version","core version":"0.18.1"}
+{"time":"2024-09-19T12:11:08.522930909Z","level":"INFO","msg":"created symlink","path":"/teamspace/studios/this_studio/GPT2/model/wandb/run-20240919_121108-gcslbziq/logs/debug-core.log"}
+{"time":"2024-09-19T12:11:08.523758084Z","level":"INFO","msg":"created new stream","id":"gcslbziq"}
+{"time":"2024-09-19T12:11:08.523784565Z","level":"INFO","msg":"stream: started","id":"gcslbziq"}
+{"time":"2024-09-19T12:11:08.523818328Z","level":"INFO","msg":"handler: started","stream_id":{"value":"gcslbziq"}}
+{"time":"2024-09-19T12:11:08.523904879Z","level":"INFO","msg":"writer: Do: started","stream_id":{"value":"gcslbziq"}}
+{"time":"2024-09-19T12:11:08.524037239Z","level":"INFO","msg":"sender: started","stream_id":{"value":"gcslbziq"}}
+{"time":"2024-09-19T12:11:08.686788282Z","level":"INFO","msg":"wandb-core","!BADKEY":null}
+{"time":"2024-09-19T12:11:08.687907513Z","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-09-19T12:11:08.842286078Z","level":"INFO","msg":"stream: closing","id":"gcslbziq"}
+{"time":"2024-09-19T12:11:08.843455368Z","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-09-19T12:11:08.844697178Z","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-09-19T12:11:09.435217904Z","level":"INFO","msg":"handler: closed","stream_id":{"value":"gcslbziq"}}
+{"time":"2024-09-19T12:11:09.435261748Z","level":"INFO","msg":"writer: Close: closed","stream_id":{"value":"gcslbziq"}}
+{"time":"2024-09-19T12:11:09.43529445Z","level":"INFO","msg":"sender: closed","stream_id":{"value":"gcslbziq"}}
+{"time":"2024-09-19T12:11:09.435322199Z","level":"INFO","msg":"stream: closed","id":"gcslbziq"}

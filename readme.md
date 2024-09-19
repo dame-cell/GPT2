@@ -1,2 +1,1 @@
-# GPT2
-  
+# GPT2-small

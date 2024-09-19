@@ -20,8 +20,8 @@ def parse_args():
     parser.add_argument('--train_data', type=str, help="path to the train npz file")
     parser.add_argument('--test_data', type=str,  help="path to the test npz file")
     parser.add_argument('--vocab_size', type=int, default=50257, help="the tokenizer vocab size")
-    parser.add_argument('--emb_dim', type=int, default=768, help="the embedding dimension of the model")
-    parser.add_argument('--num_layers', type=int, default=12, help="the number of layers for the transformers")
+    parser.add_argument('--emb_dim', type=int, default=684, help="the embedding dimension of the model")
+    parser.add_argument('--num_layers', type=int, default=6, help="the number of layers for the transformers")
     parser.add_argument('--num_heads', type=int, default=12, help="the number of attentions heads for the transformers")
     parser.add_argument('--tokenizer_name', type=str,default="gpt2", help="tokenizer name that will be used by tiktoken")
     parser.add_argument('--lr', type=float, default=1e-4, help="Learning rate (default: 1e-4)")
@@ -43,7 +43,11 @@ if __name__ == "__main__":
     args = parse_args()
     setup_seed(args.seed)
     DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-    
+    model = GPT2(args=args)
+    model.to(DEVICE)
+    total_params = sum(p.numel() for p in model.parameters())
+    print(f"Total number of parameters: {total_params:,}")
+
     # Initialize Weights & Biases
     wandb.login(key="04098c64a0b88d5f4ff90335b7f75613041420c6")
     wandb.init(
