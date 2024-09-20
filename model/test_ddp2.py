@@ -134,8 +134,9 @@ def main(rank, args):
                     with torch.no_grad():
                         for val_input_batch, val_target_batch in val_dataloader:
                             val_input_batch, val_target_batch = val_input_batch.to(device), val_target_batch.to(device)
-                            val_logits = model(val_input_batch)
-                            val_loss += F.cross_entropy(val_logits.flatten(0, 1), val_target_batch.flatten()).item()
+                            with torch.autocast(device_type="cuda", dtype=torch.float16):
+                                val_logits = model(val_input_batch)
+                                val_loss += F.cross_entropy(val_logits.flatten(0, 1), val_target_batch.flatten()).item()
                             val_steps += 1
                     
                     val_loss /= val_steps
