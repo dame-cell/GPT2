@@ -132,11 +132,13 @@ def main(rank, args):
                     val_steps = 0
                     
                     with torch.no_grad():
-                        for val_input_batch, val_target_batch in val_dataloader:
+                        val_progress_bar = tqdm(val_dataloader, desc=f"Validating (Rank {rank})", leave=False)
+                        for val_input_batch, val_target_batch in val_progress_bar:
                             val_input_batch, val_target_batch = val_input_batch.to(device), val_target_batch.to(device)
                             with torch.autocast(device_type="cuda", dtype=torch.float16):
                                 val_logits = model(val_input_batch)
-                                val_loss += F.cross_entropy(val_logits.flatten(0, 1), val_target_batch.flatten()).item()
+                                batch_loss = F.cross_entropy(val_logits.flatten(0, 1), val_target_batch.flatten()).item()
+                                val_loss += batch_loss
                             val_steps += 1
                     
                     val_loss /= val_steps
