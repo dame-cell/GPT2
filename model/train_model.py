@@ -19,6 +19,7 @@ def parse_args():
     parser.add_argument('--epochs', type=int, default=2, help="Number of training epochs (default: 2)")
     parser.add_argument('--train_data', type=str, help="path to the train npz file")
     parser.add_argument('--test_data', type=str,  help="path to the test npz file")
+    parser.add_argument('--eval_batch_size', default=4 , type=int,  help="batch size of 4 for eval")
     parser.add_argument('--vocab_size', type=int, default=50257, help="the tokenizer vocab size")
     parser.add_argument('--emb_dim', type=int, default=684, help="the embedding dimension of the model")
     parser.add_argument('--num_layers', type=int, default=6, help="the number of layers for the transformers")
@@ -63,7 +64,7 @@ if __name__ == "__main__":
 
 
     train_dataloader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4)
-    val_dataloader = DataLoader(dataset=val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4)
+    val_dataloader = DataLoader(dataset=val_dataset, batch_size=args.eval_batch_size, shuffle=False, num_workers=4)
 
 
 

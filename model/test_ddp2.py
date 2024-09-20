@@ -32,6 +32,7 @@ def parse_args():
     parser.add_argument('--epochs', type=int, default=2, help="Number of training epochs")
     parser.add_argument('--train_data', type=str, help="path to the train npz file")
     parser.add_argument('--test_data', type=str,  help="path to the test npz file")
+    parser.add_argument('--eval_batch_size', default=4 , type=int,  help="batch size of 4 for eval")
     parser.add_argument('--context_len', type=int, default=20,help="max length for the model generatng text")
     parser.add_argument('--vocab_size', type=int, default=50257, help="Tokenizer vocab size")
     parser.add_argument('--emb_dim', type=int, default=684, help="Embedding dimension")
@@ -74,7 +75,7 @@ def main(rank, args):
         val_sampler = DistributedSampler(val_dataset, num_replicas=args.world_size, rank=rank)
 
         train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, sampler=train_sampler, num_workers=4)
-        val_dataloader = DataLoader(val_dataset, batch_size=args.batch_size, sampler=val_sampler, num_workers=4)
+        val_dataloader = DataLoader(val_dataset, batch_size=args.eval_batch_size, sampler=val_sampler, num_workers=4)
 
         # Initialize model
         model = GPT2(args)
