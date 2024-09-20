@@ -4,6 +4,7 @@ from datasets import load_dataset
 from tqdm.auto import tqdm
 import numpy as np 
 import random 
+import os 
 
 def setup_seed(seed=42):
     torch.manual_seed(seed)
