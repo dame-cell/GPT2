@@ -41,6 +41,7 @@ def parse_args():
     parser.add_argument('--batch_size', type=int, default=32, help="Batch size per GPU")
     parser.add_argument('--weight_decay', type=float, default=1e-4, help="Weight decay for optimizer")
     parser.add_argument('--eval_interval', type=int, default=100, help="Evaluation interval in steps")
+    parser.add_argument('--save_step', type=int, default=2500, help="what step should we save the model ")
     parser.add_argument('--seed', type=int, default=42, help="Random seed")
     parser.add_argument('--max_length', type=int, default=512, help="Maximum sequence length")
     parser.add_argument('--data_name', type=str, default="eliplutchok/fineweb-small-sample", help="Dataset name")
@@ -120,6 +121,9 @@ def main(rank, args):
                         "epoch": epoch + 1,
                         "step": step + 1,
                     })
+
+                if (step + 1) % args.save_step == 0:
+                    save_model_checkpoint(model, optimizer, scheduler, epoch, step,rank=rank)
 
                 if (step + 1) % args.eval_interval == 0 and rank == 0:  # Only rank 0 evaluates
                     model.eval()
