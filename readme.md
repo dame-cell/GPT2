@@ -15,7 +15,6 @@ GPT-small a 92 million parameter Language-model trained
 # Hyper-Parameters
 
 
-# Obvervations
-
+# Obvervations and Experiments 
 
 # Conclusion

@@ -123,8 +123,7 @@ def main(rank, args):
                         "step": step + 1,
                     })
 
-                if (step + 1) % args.save_step == 0:
-                    save_model_checkpoint(model, optimizer, scheduler, epoch, step,rank=rank)
+
 
                 if (step + 1) % args.eval_interval == 0 and rank == 0:  # Only rank 0 evaluates
                     model.eval()
@@ -154,6 +153,9 @@ def main(rank, args):
 
             progress_bar.close()
 
+
+            if (epoch + 1) % 4 == 0 and step == 0 and rank == 0:  # Check if at start of 4th, 8th, etc. epoch
+                save_model_checkpoint(model, optimizer, scheduler, epoch, step, rank=rank)
 
             if rank == 0:  # Only rank 0 generates sample text
                 START_CONTEXT = "As an AI language model,"
