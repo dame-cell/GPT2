@@ -1,6 +1,10 @@
 # GPT2-small
 GPT-small a 92 million parameter Language-model   
 
+<p align="center">
+  <img src="images/small_ronot.png" alt="dogs" width="400"/>
+</p>
+
 # Examples 
 
 
