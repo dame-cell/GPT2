@@ -48,6 +48,6 @@ python3 data.pt --sample_size 100_000 # max is 700k
 ```
 - After the data is prepared now go to kaggle choose the two t4 gpus options
 ```bash
-!python test_ddp2.py --batch_size 16 --eval_batch_size 16 --eval_interval 2000 --epochs 12 --train_data "path to the train_npz" --test_data "path to the test_npz"
+python test_ddp2.py --batch_size 16 --eval_batch_size 16 --eval_interval 2000 --epochs 12 --train_data "path to the train_npz" --test_data "path to the test_npz"
 ```
 # Obvervations and Experiments 
