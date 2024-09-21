@@ -69,7 +69,7 @@ def main(rank, args):
    
         train_dataset = GPTDatasetV1(args.train_data)
         val_dataset = GPTDatasetV1(args.test_data)
-
+        
         # Set up distributed data loaders and samplers
         train_sampler = DistributedSampler(train_dataset, num_replicas=args.world_size, rank=rank)
         val_sampler = DistributedSampler(val_dataset, num_replicas=args.world_size, rank=rank)
