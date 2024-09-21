@@ -25,18 +25,26 @@ def tokenize(tokenizer,data):
     return [token for text in encoded_data for token in text]
 
 def save_model_checkpoint(model, optimizer, scheduler, epoch, step, rank, save_dir="checkpoints"):
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
-    save_path = os.path.join(save_dir, f"gpt2_epoch{epoch+1}_step{step+1}_gpu{rank}.pt")
-    torch.save({
-        'epoch': epoch + 1,
-        'step': step + 1,
-        'model_state_dict': model.state_dict(),
-        'optimizer_state_dict': optimizer.state_dict(),
-        'scheduler_state_dict': scheduler.state_dict(),
-    }, save_path)
-    print(f"Model saved at {save_path}")
-
+    # Only save from rank 0 process
+    if rank == 0:
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+        
+        save_path = os.path.join(save_dir, f"gpt2_epoch{epoch+1}_step{step+1}.pt")
+        
+        # Save the model
+        torch.save({
+            'epoch': epoch + 1,
+            'step': step + 1,
+            'model_state_dict': model.module.state_dict(),  # Use model.module for DDP
+            'optimizer_state_dict': optimizer.state_dict(),
+            'scheduler_state_dict': scheduler.state_dict(),
+        }, save_path)
+        
+        print(f"Model saved at {save_path}")
+    
+    # Synchronize processes
+    torch.distributed.barrier()
 class GPTDatasetV1(Dataset):
     def __init__(self, npz_file_path):
         # Load precomputed inputs and targets from .npz file

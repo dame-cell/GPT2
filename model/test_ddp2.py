@@ -154,8 +154,8 @@ def main(rank, args):
             progress_bar.close()
 
 
-            if (epoch + 1) % 4 == 0 and step == 0 and rank == 0:  # Check if at start of 4th, 8th, etc. epoch
-                save_model_checkpoint(model, optimizer, scheduler, epoch, step, rank=rank)
+            if (epoch + 1) % 4 == 0:  
+                save_model_checkpoint(model, optimizer, scheduler, epoch, step, rank)
 
             if rank == 0:  # Only rank 0 generates sample text
                 START_CONTEXT = "As an AI language model,"
@@ -169,10 +169,7 @@ def main(rank, args):
                 sample_text = token_ids_to_text(token_ids, tokenizer)
                 print(f"\nSample text:", sample_text)
                 
-                wandb.log({
-                    "sample_text": sample_text,
-                    "epoch": epoch + 1,
-                })
+              
 
     except Exception as e:
         print(f"Rank {rank} encountered an error: {str(e)}")
