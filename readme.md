@@ -54,4 +54,25 @@ python3 data.py --sample_size 100_000 # max is 700k
 ```bash
 python test_ddp2.py --batch_size 16 --eval_batch_size 16 --eval_interval 2000 --epochs 12 --train_data "path to the train_npz" --test_data "path to the test_npz"
 ```
-# Obvervations and Experiments 
+### Observations and Experiments
+
+I performed a few experiments here are some obersavation i discovered :
+
+### Learning Rate
+- Started training with a learning rate of `1e-4`, which led to limited progress. The model generated coherent text but lacked contextual relevance, often producing random outputs.
+
+- Increased the learning rate to `3e-4`, leading to faster convergence and more relevant text generation. However, some overfitting occurred.
+
+- To mitigate overfitting, increased both dataset size and learning rate to `6e-4`, resulting in better generalization, contextually relevant text, and faster convergence without overfitting.
+
+### Model Size
+
+- In the first training, the model had over `200 million` parameters. This was not ideal given the small dataset, and training it led to poor results.
+
+- In the second iteration, I reduced the model size to `90+ million` parameters. This time, the model performed significantly better.
+
+These experiments were done after a lot of iteration for instance I had to train the model again and again to make sure it actually generate coherent texts.
+
+If you want to train you own model , you can easily run this code but keep in mind if you run it on only 100k rows for 10 epochs and you will notice it does generate coherent texts 
+
+Thanks for reading!! : ) 
