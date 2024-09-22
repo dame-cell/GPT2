@@ -2,7 +2,7 @@
 GPT-small a 92 million parameter Language-model   
 
 <p align="center">
-  <img src="images/small_ronot.png" alt="dogs" width="400"/>
+  <img src="images/small_ronot.png" alt="cutegpt" width="400"/>
 </p>
 
 # Examples 
@@ -18,7 +18,7 @@ The model was trained using **two NVIDIA T4 GPUs** in a distributed data paralle
 |---------------------------|-----------------------------------------|
 | GPUs                      | 2x NVIDIA T4                            |
 | Batch Size                | 16 per GPU                              |
-| Optimizer                 | AdamW (LR: 1e-4, Weight Decay: 1e-4)    |
+| Optimizer                 | AdamW (LR: 6e-4, Weight Decay: 1e-4)    |
 | Learning Rate Scheduler    | Linear warm-up (10% of total steps)     |
 | Mixed Precision            | torch.float16          |
 | Epochs                    | 20                                      |
@@ -48,7 +48,7 @@ cd model
 ```
 - Then we prepare the dataset
 ```bash
-python3 data.pt --sample_size 100_000 # max is 700k 
+python3 data.py --sample_size 100_000 # max is 700k 
 ```
 - After the data is prepared now go to kaggle choose the two t4 gpus options
 ```bash
