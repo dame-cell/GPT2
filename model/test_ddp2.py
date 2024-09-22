@@ -38,7 +38,7 @@ def parse_args():
     parser.add_argument('--emb_dim', type=int, default=684, help="Embedding dimension")
     parser.add_argument('--num_layers', type=int, default=6, help="Number of transformer layers")
     parser.add_argument('--num_heads', type=int, default=12, help="Number of attention heads")
-    parser.add_argument('--lr', type=float, default=1e-4, help="Learning rate")
+    parser.add_argument('--lr', type=float, default=6e-4, help="Learning rate")
     parser.add_argument('--batch_size', type=int, default=32, help="Batch size per GPU")
     parser.add_argument('--weight_decay', type=float, default=1e-4, help="Weight decay for optimizer")
     parser.add_argument('--eval_interval', type=int, default=100, help="Evaluation interval in steps")

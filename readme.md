@@ -31,11 +31,11 @@ Model checkpoints are saved every 4 epochs, and validation is performed at regul
 
 | **Description**            | **Count**       |
 |----------------------------|-----------------|
-| Total tokens               | 307,976,016      |
-| Training tokens            | 277,178,414      |
-| Testing tokens             | 30,797,602       |
-| Number of training sequences| 1,082,727       |
-| Number of testing sequences | 120,302         |
+| Total tokens               | 206,130,153      |
+| Training tokens            | 185,517,137       |
+| Testing tokens             | 20,613,016        |
+| Number of training sequences| 724,675    |
+| Number of testing sequences | 80,518        |
 
 
 # Get Started
