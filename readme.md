@@ -56,6 +56,7 @@ python test_ddp2.py --batch_size 16 --eval_batch_size 16 --eval_interval 2000 --
 ```
 ### Observations and Experiments
 
+
 I performed a few experiments here are some obersavation i discovered :
 
 ### Learning Rate
@@ -74,5 +75,19 @@ I performed a few experiments here are some obersavation i discovered :
 These experiments were done after a lot of iteration for instance I had to train the model again and again to make sure it actually generate coherent texts.
 
 If you want to train you own model , you can easily run this code but keep in mind if you run it on only 100k rows for 10 epochs and you will notice it does generate coherent texts 
+
+# Plots 
+
+| Train los | Val loss |
+|:-----:|:-------:|
+| <img src="images/W&B Chart 9_23_2024, 5_22_28 PM.png" width="500" alt="Tokenization Comparison Hindi"> | <img src="images/W&B Chart 9_23_2024, 5_22_39 PM.png" width="500" alt="Tokenization Comparison English"> | 
+
+<p align="center">
+  <img src="images/W&B Chart 9_23_2024, 5_22_46 PM.png" alt="lr" width="500"/>
+</p>
+
+# Future Works 
+I plan on continually training this model until I'm satisfied with its generation and as i kept training the train loss and the  val loss kept decreasing which  indicate continuous improvement. 
+
 
 Thanks for reading!! : ) 
